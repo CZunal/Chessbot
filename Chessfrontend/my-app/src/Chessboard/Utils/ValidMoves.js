@@ -14,10 +14,35 @@ function isKingMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsAr
 
 //Can move up or down
 //Can't go beyond a piece if other piece is same color
-function isRockMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray) {
+function isRookMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray) {
+    const rowDiff = Math.abs(toRow - fromRow);
+    const colDiff = Math.abs(toCol - fromCol);
 
-    return true;
+    // Rook can move vertically or horizontally
+    if ((rowDiff === 0 && colDiff !== 0) || (rowDiff !== 0 && colDiff === 0)) {
+        const rowStep = rowDiff === 0 ? 0 : (toRow > fromRow ? 1 : -1);
+        const colStep = colDiff === 0 ? 0 : (toCol > fromCol ? 1 : -1);
+
+        let currentRow = parseInt(fromRow) + rowStep;
+        let currentCol = parseInt(fromCol) + colStep;
+
+        // Check each square along the vertical or horizontal path
+        while (currentRow !== toRow || currentCol !== toCol) {
+            if (piecePositionsArray[currentRow][currentCol] !== '.') {
+                console.log("There is a piece blocking that path");
+                return false; // There is a piece in the way
+            }
+            currentRow += rowStep;
+            currentCol += colStep;
+        }
+
+        return true; // No pieces in the way
+    }
+
+    console.log("Not a valid rook movement");
+    return false; // Not a valid vertical or horizontal movement
 }
+
 
 //Can move horizontally 
 //Can't move to a horizontal block that is blocked by another piece
@@ -31,13 +56,14 @@ function isBishopMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositions
         const rowStep = toRow > fromRow ? 1 : -1;
         const colStep = toCol > fromCol ? 1 : -1;
 
-        let currentRow = fromRow + rowStep;
-        let currentCol = fromCol + colStep;
+        let currentRow = parseInt(fromRow) + rowStep;
+        let currentCol = parseInt(fromCol) + colStep;
 
         // Check each square along the diagonal path
-        console.log(currentRow, toRow);
+        console.log("Current:", currentCol, "-", currentRow, " to:", toCol, "-", toRow);
         while (currentRow !== toRow && currentCol !== toCol) {
             if (piecePositionsArray[currentRow][currentCol] !== '.') {
+                alert("There is a piece blocking that place");
                 return false; // There is a piece in the way
             }
             currentRow += rowStep;
@@ -56,12 +82,15 @@ function isKnightMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositions
     const rowDiff = Math.abs(toRow - fromRow);
     const colDiff = Math.abs(toCol - fromCol);
 
-    // Knight moves in L shape: 2 squares in one direction and 1 square in the other
+    // Knight moves in an L-shape: 2 squares in one direction and 1 square in the other
     if ((rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2)) {
-
-        return true;
+        if (piecePositionsArray[toRow][toCol] === '.' || piecePositionsArray[toRow][toCol] !== piece) {
+            return true; // Valid knight movement
+        }
     }
-    return false;
+
+    console.log("Not a valid knight movement");
+    return false; // Not a valid L-shaped movement
 }
 
 function isSameCase(sourcePiece, destinationPiece) {
@@ -72,12 +101,57 @@ function isSameCase(sourcePiece, destinationPiece) {
 
 
 function isBlackPawnMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray) {
-    return true;
+    const rowDiff = toRow - fromRow;
+    const colDiff = Math.abs(toCol - fromCol);
+
+    // Black pawns can move one square forward or two squares forward if in starting position
+    if (rowDiff === 1 && colDiff === 0) {
+        if (piecePositionsArray[toRow][toCol] === '.') {
+            return true; // Valid pawn movement
+        }
+    } else if (fromRow === 1 && rowDiff === 2 && colDiff === 0) {
+        if (piecePositionsArray[fromRow + 1][fromCol] === '.' && piecePositionsArray[toRow][toCol] === '.') {
+            return true; // Valid pawn initial double-step movement
+        }
+    }
+
+    // Black pawns can capture diagonally
+    if (rowDiff === 1 && colDiff === 1) {
+        if (piecePositionsArray[toRow][toCol] !== '.' && piecePositionsArray[toRow][toCol] !== piece) {
+            return true; // Valid pawn capture
+        }
+    }
+
+    console.log("Not a valid black pawn movement");
+    return false;
 }
 
 function isWhitePawnMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray) {
-    return true;
+    const rowDiff = fromRow - toRow;
+    const colDiff = Math.abs(toCol - fromCol);
+
+    // White pawns can move one square forward or two squares forward if in starting position
+    if (rowDiff === 1 && colDiff === 0) {
+        if (piecePositionsArray[toRow][toCol] === '.') {
+            return true; // Valid pawn movement
+        }
+    } else if (fromRow === 6 && rowDiff === 2 && colDiff === 0) {
+        if (piecePositionsArray[fromRow - 1][fromCol] === '.' && piecePositionsArray[toRow][toCol] === '.') {
+            return true; // Valid pawn initial double-step movement
+        }
+    }
+
+    // White pawns can capture diagonally
+    if (rowDiff === 1 && colDiff === 1) {
+        if (piecePositionsArray[toRow][toCol] !== '.' && piecePositionsArray[toRow][toCol] !== piece) {
+            return true; // Valid pawn capture
+        }
+    }
+
+    console.log("Not a valid white pawn movement");
+    return false;
 }
+
 
 export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, piecePositionsArray) => {
 // Implement rules for each piece type here
@@ -94,13 +168,13 @@ export const isValidMove = (piece, fromRow, fromCol, toRow, toCol, piecePosition
                 return isKingMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray);
             case 'r':
                 // Implement rules for Rook's movement along rows/columns
-                return isRockMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray);
+                return isRookMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray);
             case 'b':
                 // Implement rules for Bishop's diagonal movement
                 return isBishopMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray);
             case 'q':
                 // Implement rules for Queen's combined Rook and Bishop movement
-                return isBishopMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray) || isRockMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray);
+                return isBishopMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray) || isRookMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray);
             case 'n':
                 // Implement rules for Knight's L-shaped movement
                 return (isKnightMoveValid(piece, fromRow, fromCol, toRow, toCol, piecePositionsArray));
